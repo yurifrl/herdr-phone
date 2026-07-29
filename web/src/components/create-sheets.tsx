@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Sheet,
   SheetClose,
@@ -13,14 +13,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DirectoryPicker } from "@/components/directory-picker";
 import { useMutations } from "@/hooks/use-mutations";
-import { DEFAULT_CWD } from "@/lib/launch";
+import { useWorkspaceRoot } from "@/hooks/use-app-store";
 
 /** Create a workspace with a label and a relay-confined working directory. */
 export function CreateWorkspaceSheet({ trigger, onDone }: { trigger: ReactNode; onDone?: (workspaceId?: string) => void }) {
   const { run, pending, error } = useMutations();
+  const root = useWorkspaceRoot();
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState("");
-  const [cwd, setCwd] = useState(DEFAULT_CWD);
+  const [cwd, setCwd] = useState("");
+  useEffect(() => {
+    if (!cwd && root) setCwd(root);
+  }, [root, cwd]);
 
   async function submit() {
     const res = await run("workspace.create", { label: label.trim() || undefined, cwd });

@@ -12,9 +12,10 @@ type pairRequest struct {
 }
 
 type pairResponse struct {
-	CSRFToken     string `json:"csrf_token"`
-	ExpiresUnixMs int64  `json:"expires_unix_ms"`
-	Identity      idJSON `json:"identity"`
+	CSRFToken      string   `json:"csrf_token"`
+	ExpiresUnixMs  int64    `json:"expires_unix_ms"`
+	Identity       idJSON   `json:"identity"`
+	WorkspaceRoots []string `json:"workspace_roots"`
 }
 
 type idJSON struct {
@@ -68,6 +69,7 @@ func (s *Server) handlePair(w http.ResponseWriter, r *http.Request) {
 			Quick:   sess.Identity.Quick,
 			Mode:    s.mode(),
 		},
+		WorkspaceRoots: s.cfg.WorkspaceRoots,
 	})
 }
 
@@ -76,9 +78,10 @@ func (s *Server) handlePair(w http.ResponseWriter, r *http.Request) {
 // mirrors the pair response shape but is a distinct type so the pair response is
 // untouched. It never carries the session bearer cookie value.
 type sessionResponse struct {
-	CSRFToken     string `json:"csrf_token"`
-	ExpiresUnixMs int64  `json:"expires_unix_ms"`
-	Identity      idJSON `json:"identity"`
+	CSRFToken      string   `json:"csrf_token"`
+	ExpiresUnixMs  int64    `json:"expires_unix_ms"`
+	Identity       idJSON   `json:"identity"`
+	WorkspaceRoots []string `json:"workspace_roots"`
 }
 
 func (s *Server) handleGetSession(w http.ResponseWriter, r *http.Request) {
@@ -96,6 +99,7 @@ func (s *Server) handleGetSession(w http.ResponseWriter, r *http.Request) {
 			Quick:   ident.Quick,
 			Mode:    s.mode(),
 		},
+		WorkspaceRoots: s.cfg.WorkspaceRoots,
 	})
 }
 

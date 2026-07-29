@@ -196,6 +196,7 @@ export function sessionFromResponse(p: WirePairResponse): SessionInfo {
     quick: !!p.identity?.quick,
     expiresUnixMs: p.expires_unix_ms,
     csrfToken: p.csrf_token,
+    workspaceRoots: p.workspace_roots ?? [],
   };
 }
 

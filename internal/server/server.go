@@ -28,6 +28,11 @@ type Config struct {
 	// mandatory).
 	Quick bool
 
+	// WorkspaceRoots are the resolved allowed workspace roots, surfaced to the
+	// client so the directory picker opens at a valid location instead of
+	// inventing a default path.
+	WorkspaceRoots []string
+
 	MaxBodyBytes           int64
 	RequestTimeout         time.Duration
 	ServerMutationDeadline time.Duration

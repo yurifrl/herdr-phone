@@ -1323,12 +1323,22 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL): P
       send(res, 401, { error: { code: "unauthorized", message: "pairing rejected", retryable: false } });
       return true;
     }
-    send(res, 200, sessionPayload(), { "Set-Cookie": `${COOKIE}=1; Path=/; HttpOnly; SameSite=Strict` });
+    send(res, 200, {
+      csrf_token: "mock-csrf-token",
+      expires_unix_ms: Date.now() + 12 * 3600 * 1000,
+      identity: { subject: "", display: "Quick Tunnel operator", quick: true, mode: "quick" },
+      workspace_roots: ["/Users/dev/code"],
+    }, { "Set-Cookie": `${COOKIE}=1; Path=/; HttpOnly; SameSite=Strict` });
     return true;
   }
   if (path === "/session" && method === "GET") {
-    if (!authorize(req, res)) return true;
-    send(res, 200, sessionPayload());
+    if (!isPaired(req)) return unauthorized(res);
+    send(res, 200, {
+      csrf_token: "mock-csrf-token",
+      expires_unix_ms: Date.now() + 12 * 3600 * 1000,
+      identity: { subject: "", display: "Quick Tunnel operator", quick: true, mode: "quick" },
+      workspace_roots: ["/Users/dev/code"],
+    });
     return true;
   }
   if (path === "/session" && method === "DELETE") {

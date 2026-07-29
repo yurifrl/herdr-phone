@@ -9,3 +9,9 @@ import { store, type AppState } from "@/lib/store";
 export function useAppState(): AppState {
   return useSyncExternalStore(store.subscribe, store.getState, store.getState);
 }
+
+/** First allowed workspace root, or "" before the session loads. Used to open
+ * directory pickers at a valid location. */
+export function useWorkspaceRoot(): string {
+  return useAppState().session?.workspaceRoots?.[0] ?? "";
+}

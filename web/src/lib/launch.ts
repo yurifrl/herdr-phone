@@ -83,7 +83,7 @@ export interface LaunchState {
   created: LaunchCreated;
 }
 
-export const DEFAULT_CWD = "/Users/dev/code";
+export const DEFAULT_CWD = "";
 
 export function emptyDraft(): LaunchDraft {
   return {

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { GitBranch, Plus, FolderOpen, Trash2 } from "lucide-react";
 import {
   Sheet,
@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { DirectoryPicker } from "@/components/directory-picker";
 import { ConfirmAction } from "@/components/confirm-action";
-import { useAppState } from "@/hooks/use-app-store";
+import { useAppState, useWorkspaceRoot } from "@/hooks/use-app-store";
 import { useMutations } from "@/hooks/use-mutations";
 import { shortPath } from "@/lib/format";
 
@@ -42,7 +42,11 @@ export function WorktreeSheet({ trigger }: { trigger: ReactNode }) {
   const [mode, setMode] = useState<Mode>("list");
   const [branch, setBranch] = useState("");
   const [base, setBase] = useState("main");
-  const [cwd, setCwd] = useState("/Users/dev/code");
+  const root = useWorkspaceRoot();
+  const [cwd, setCwd] = useState("");
+  useEffect(() => {
+    if (!cwd && root) setCwd(root);
+  }, [root, cwd]);
   const checkouts = (snapshot?.workspaces ?? []).filter((w) => w.worktree);
 
   async function create() {

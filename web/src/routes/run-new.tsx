@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DirectoryPicker } from "@/components/directory-picker";
-import { useAppState } from "@/hooks/use-app-store";
+import { useAppState, useWorkspaceRoot } from "@/hooks/use-app-store";
 import { useLaunch } from "@/hooks/use-launch";
 import { useRouteTitle } from "@/hooks/use-route-title";
 import { isValidAgentName, suggestAgentName } from "@/lib/agent-name";
@@ -121,8 +121,16 @@ export function StartRunRoute() {
   const heading = useRouteTitle("Start run");
   const navigate = useNavigate();
   const { snapshot, capabilities } = useAppState();
+  const root = useWorkspaceRoot();
   const { state, patchDraft, launch, retry, resendObjective, reset, problem } = useLaunch();
   const { draft, steps, phase, created } = state;
+
+  // Default the new-workspace/worktree directory to a valid allowed root instead
+  // of a hardcoded path, once the session reports its roots.
+  useEffect(() => {
+    if (!draft.cwd && root) patchDraft({ cwd: root });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [root, draft.cwd]);
 
   const operations = useMemo(() => new Set(capabilities?.operations ?? []), [capabilities]);
   const kinds = capabilities?.agentKinds ?? [];

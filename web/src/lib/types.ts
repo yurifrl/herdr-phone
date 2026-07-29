@@ -383,6 +383,7 @@ export interface WirePairResponse {
   csrf_token: string;
   expires_unix_ms: number;
   identity: WireIdentity;
+  workspace_roots?: string[];
 }
 
 /** GET /session now returns the same shape as pairing (csrf_token + expiry +
@@ -567,6 +568,9 @@ export interface SessionInfo {
   /** CSRF token held in memory (SPEC §9.1: never persisted). Issued by POST /pair
    * and re-issued by GET /session, so a cold reload keeps a mutable session. */
   csrfToken: string;
+  /** Allowed workspace roots (resolved, absolute), so the directory picker opens
+   * at a valid location instead of a hardcoded path. */
+  workspaceRoots: string[];
 }
 
 export type ReadSource = "visible" | "recent" | "recent-unwrapped";

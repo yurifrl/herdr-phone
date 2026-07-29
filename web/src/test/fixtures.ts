@@ -67,7 +67,7 @@ export function makeSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
 }
 
 export function makeSession(overrides: Partial<SessionInfo> = {}): SessionInfo {
-  return { operator: "Quick Tunnel operator", mode: "quick", quick: true, expiresUnixMs: Date.now() + 3600_000, csrfToken: "csrf", ...overrides };
+  return { operator: "Quick Tunnel operator", mode: "quick", quick: true, expiresUnixMs: Date.now() + 3600_000, csrfToken: "csrf", workspaceRoots: ["/Users/dev/code"], ...overrides };
 }
 
 export function makePairResponse(overrides: Partial<WirePairResponse> = {}): WirePairResponse {
