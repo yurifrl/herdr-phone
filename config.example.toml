@@ -40,7 +40,12 @@ idle_lock = "30m"
 allowed_workspace_roots = ["~"]
 
 [cloudflare]
-# Front door: "named" (Cloudflare named tunnel, the default) or "quick".
+# Front door: "named" (Cloudflare named tunnel, the default), "external", or
+# "quick". In "external" mode the relay serves its loopback origin and validates
+# the Cloudflare Access JWT exactly like named, but does NOT start cloudflared:
+# an out-of-band tunnel/proxy (e.g. a shared cloudflared with per-app ingress
+# forwarding <app>.example -> http://127.0.0.1:8787) is the front door. External
+# mode therefore configures NO credential strategy below.
 mode = "named"
 # cloudflared executable (name on PATH or an absolute path).
 binary = "cloudflared"

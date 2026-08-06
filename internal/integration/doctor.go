@@ -102,7 +102,7 @@ const accessIdentityGateName = "Access identity allowlist"
 // The identities themselves are never printed: doctor output is copied into bug
 // reports and panes, and the count is all an operator needs to see.
 func accessIdentityGateCheck(cfg config.Config) (app.DoctorCheck, bool) {
-	if cfg.Cloudflare.Mode != config.ModeNamed {
+	if !config.ModeUsesAccess(cfg.Cloudflare.Mode) {
 		return app.DoctorCheck{}, false
 	}
 	switch {

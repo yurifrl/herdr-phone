@@ -30,7 +30,28 @@ import (
 const (
 	ModeNamed = "named"
 	ModeQuick = "quick"
+	// ModeExternal serves the origin on loopback and validates the Cloudflare
+	// Access JWT exactly like named mode, but does NOT start or supervise
+	// cloudflared: the tunnel/proxy that fronts this host is managed out of band
+	// (e.g. a shared cloudflared with per-app ingress forwarding
+	// <app>.example -> http://127.0.0.1:<port>). It therefore configures no
+	// cloudflared credential strategy.
+	ModeExternal = "external"
 )
+
+// ModeManagesTunnel reports whether the relay itself starts and supervises a
+// cloudflared child for the mode. External mode delegates the front door to an
+// out-of-band tunnel/proxy, so it manages none.
+func ModeManagesTunnel(mode string) bool {
+	return mode == ModeNamed || mode == ModeQuick
+}
+
+// ModeUsesAccess reports whether the origin enforces Cloudflare Access JWT
+// identity for the mode. Named and external both sit behind Access; quick uses
+// a pairing link instead.
+func ModeUsesAccess(mode string) bool {
+	return mode == ModeNamed || mode == ModeExternal
+}
 
 // UI themes.
 const (
@@ -594,14 +615,37 @@ func (c Cloudflare) validate(access Access) error {
 	switch c.Mode {
 	case ModeNamed:
 		return c.validateNamed(access)
+	case ModeExternal:
+		return c.validateExternal(access)
 	case ModeQuick:
 		if !c.QuickEnabled {
 			return errors.New("cloudflare.mode is \"quick\" but cloudflare.quick_enabled is false; Quick Tunnels must be explicitly enabled")
 		}
 		return nil
 	default:
-		return fmt.Errorf("cloudflare.mode must be %q or %q, got %q", ModeNamed, ModeQuick, c.Mode)
+		return fmt.Errorf("cloudflare.mode must be %q, %q or %q, got %q", ModeNamed, ModeExternal, ModeQuick, c.Mode)
 	}
+}
+
+// validateExternal enforces the external front-door contract: Access is the sole
+// interactive gate (an out-of-band tunnel/proxy forwards the Access JWT to the
+// origin, which re-validates it), so the same Access requirements as named mode
+// apply, but the relay manages no cloudflared child and therefore must NOT carry
+// any cloudflared credential strategy.
+func (c Cloudflare) validateExternal(access Access) error {
+	if !access.Enabled {
+		return errors.New("external mode requires auth.access.enabled = true (the out-of-band tunnel/proxy front door is gated by Cloudflare Access, which the origin re-validates)")
+	}
+	if c.PublicURL == "" {
+		return errors.New("external mode requires cloudflare.public_url (an absolute https URL; the public host the proxy serves)")
+	}
+	if strategies := c.credentialStrategies(); len(strategies) > 0 {
+		return fmt.Errorf("external mode manages no cloudflared child, so it must not configure a credential strategy, but found: %s", strings.Join(strategies, ", "))
+	}
+	if err := access.validate(); err != nil {
+		return err
+	}
+	return access.validateIdentityGate()
 }
 
 func (c Cloudflare) validateNamed(access Access) error {

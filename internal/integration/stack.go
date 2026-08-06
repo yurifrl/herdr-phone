@@ -179,16 +179,22 @@ func buildStack(serveCtx context.Context, cancel context.CancelFunc, rt *Runtime
 		}
 	}()
 
-	// cloudflared supervisor. Start it and wait for the URL to be known.
-	tcfg := tunnelConfig(cfg, mode, cfg.Server.Port, stateDir)
-	sup, err := tunnel.New(tcfg)
-	if err != nil {
-		return nil, fmt.Errorf("tunnel: %w", err)
+	// cloudflared supervisor. Started only when the relay owns the tunnel; in
+	// external mode the front door is an out-of-band tunnel/proxy, so no
+	// cloudflared child is created and sup stays nil (guarded downstream).
+	var sup *tunnel.Supervisor
+	if config.ModeManagesTunnel(mode) {
+		tcfg := tunnelConfig(cfg, mode, cfg.Server.Port, stateDir)
+		s, err := tunnel.New(tcfg)
+		if err != nil {
+			return nil, fmt.Errorf("tunnel: %w", err)
+		}
+		sup = s
+		st.sup = sup
+		tc := daemon.NewTunnelChild(sup)
+		st.tc = tc
+		_ = tc.Start(serveCtx) // start once; the daemon later supervises without restarting.
 	}
-	st.sup = sup
-	tc := daemon.NewTunnelChild(sup)
-	st.tc = tc
-	_ = tc.Start(serveCtx) // start once; the daemon later supervises without restarting.
 
 	// Determine the public URL. Named mode knows it from config and does NOT block
 	// serve on the edge connecting — the daemon comes up promptly and `start`
@@ -292,7 +298,9 @@ func buildStack(serveCtx context.Context, cancel context.CancelFunc, rt *Runtime
 		Lock: lock,
 	})
 	dHolder.Store(d)
-	d.AddTunnel(tc)
+	if st.tc != nil {
+		d.AddTunnel(st.tc)
+	}
 	d.AddProbe("http", daemon.ProbeFunc(func(context.Context) (bool, string) {
 		return true, "listening on " + listener.Addr().String()
 	}))
@@ -391,8 +399,9 @@ func waitQuickTunnelURL(ctx context.Context, sup *tunnel.Supervisor, timeout tim
 	}
 }
 
-// buildAuth constructs the composed Authenticator for the mode. Named mode wires
-// a JWKS-backed Access verifier; quick mode has no edge identity.
+// buildAuth constructs the composed Authenticator for the mode. Named and
+// external modes wire a JWKS-backed Access verifier; quick mode has no edge
+// identity.
 func buildAuth(cfg config.Config, mode string, baseURL func() string) (*authAdapter, error) {
 	pairing, err := auth.NewPairing()
 	if err != nil {
@@ -400,7 +409,7 @@ func buildAuth(cfg config.Config, mode string, baseURL func() string) (*authAdap
 	}
 	sessions := auth.NewSessionStore(cfg.Server.SessionTTL, cfg.Server.IdleLock)
 	ad := &authAdapter{
-		named:    mode == config.ModeNamed,
+		named:    config.ModeUsesAccess(mode),
 		pairing:  pairing,
 		sessions: sessions,
 		baseURL:  baseURL,

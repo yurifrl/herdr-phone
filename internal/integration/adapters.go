@@ -219,6 +219,14 @@ type tunnelStatusAdapter struct {
 var _ server.TunnelStatus = (*tunnelStatusAdapter)(nil)
 
 func (t *tunnelStatusAdapter) Tunnel() server.TunnelInfo {
+	// External mode manages no cloudflared child (sup is nil): the front door is
+	// an out-of-band tunnel/proxy, so report it as healthy and externally managed.
+	if t.sup == nil {
+		return server.TunnelInfo{
+			Mode:   t.mode,
+			Health: server.ComponentHealth{Healthy: true, Detail: "external"},
+		}
+	}
 	st := t.sup.State()
 	return server.TunnelInfo{
 		Mode:      t.mode,

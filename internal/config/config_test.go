@@ -438,3 +438,86 @@ func TestDurationsParsedIntoConfig(t *testing.T) {
 		t.Errorf("session_ttl = %s", cfg.Server.SessionTTL)
 	}
 }
+
+const validExternal = `
+[server]
+host = "127.0.0.1"
+port = 8787
+
+[cloudflare]
+mode = "external"
+public_url = "https://herdr.example.com"
+
+[auth.access]
+enabled = true
+team_domain = "example.cloudflareaccess.com"
+audience = "aud-123"
+allowed_identities = ["op@example.com"]
+`
+
+func TestValidExternal(t *testing.T) {
+	t.Parallel()
+	cfg := mustLoad(t, validExternal)
+	if cfg.Cloudflare.Mode != ModeExternal || cfg.Cloudflare.PublicURL != "https://herdr.example.com" {
+		t.Errorf("external config not loaded: %+v", cfg.Cloudflare)
+	}
+	if !ModeUsesAccess(cfg.Cloudflare.Mode) || ModeManagesTunnel(cfg.Cloudflare.Mode) {
+		t.Errorf("external must use Access and manage no tunnel")
+	}
+}
+
+func TestExternalRequiresAccessEnabled(t *testing.T) {
+	t.Parallel()
+	body := `
+[cloudflare]
+mode = "external"
+public_url = "https://h.example.com"
+[auth.access]
+enabled = false
+`
+	mustReject(t, body, "external mode requires auth.access.enabled = true")
+}
+
+func TestExternalRequiresPublicURL(t *testing.T) {
+	t.Parallel()
+	body := `
+[cloudflare]
+mode = "external"
+[auth.access]
+enabled = true
+team_domain = "example.cloudflareaccess.com"
+audience = "aud"
+allowed_identities = ["op@example.com"]
+`
+	mustReject(t, body, "external mode requires cloudflare.public_url")
+}
+
+func TestExternalRejectsCredentialStrategy(t *testing.T) {
+	t.Parallel()
+	body := `
+[cloudflare]
+mode = "external"
+public_url = "https://h.example.com"
+token_command = ["print-token"]
+[auth.access]
+enabled = true
+team_domain = "example.cloudflareaccess.com"
+audience = "aud"
+allowed_identities = ["op@example.com"]
+`
+	mustReject(t, body, "external mode manages no cloudflared child")
+}
+
+func TestExternalRequiresIdentityAllowlist(t *testing.T) {
+	t.Parallel()
+	body := `
+[cloudflare]
+mode = "external"
+public_url = "https://h.example.com"
+[auth.access]
+enabled = true
+team_domain = "example.cloudflareaccess.com"
+audience = "aud"
+`
+	mustReject(t, body, "requires a non-empty auth.access.allowed_identities")
+}
