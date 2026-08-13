@@ -7,7 +7,7 @@ describe("normalizeSnapshot", () => {
   it("flattens the nested wire envelope into the view model", () => {
     const snap = normalizeSnapshot(makeWireEnvelope())!;
     expect(snap.hash).toBe("h7");
-    expect(snap.herdrVersion).toBe("0.7.5");
+    expect(snap.herdrVersion).toBe("0.8.0");
     expect(snap.focusedPaneId).toBe("w1:p1");
     expect(snap.workspaces[0].id).toBe("w1");
   });
@@ -69,8 +69,8 @@ describe("normalizeCapabilities", () => {
   const wire: WireCapabilities = {
     version: 1,
     operations: ["pane.split", "worktree.remove_force"],
-    capabilities: { herdr_version: "0.7.5", herdr_protocol: 17, live_handoff: true, agent_kinds: ["claude", "codex"] },
-    status: { version: "0.1.0", protocol: 17, mode: "named", ready: true, herdr: { healthy: true }, state: { healthy: true }, clients: 2 },
+    capabilities: { herdr_version: "0.8.0", herdr_protocol: 19, live_handoff: true, agent_kinds: ["claude", "codex"] },
+    status: { version: "0.1.0", protocol: 19, mode: "named", ready: true, herdr: { healthy: true }, state: { healthy: true }, clients: 2 },
     tunnel: { mode: "named", public_url: "https://x.example.com", health: { healthy: true } },
     limits: { max_body_bytes: 1, max_pane_read_lines: 2, confirmation_ttl_seconds: 30 },
   };
@@ -81,11 +81,11 @@ describe("normalizeCapabilities", () => {
     expect(c.agentKindsAvailable).toBe(true);
     expect(c.mode).toBe("named");
     expect(c.accessEnforced).toBe(true);
-    expect(c.herdrVersion).toBe("0.7.5");
+    expect(c.herdrVersion).toBe("0.8.0");
   });
 
   it("flags agent kinds unavailable when the backend omits them", () => {
-    const c = normalizeCapabilities({ ...wire, capabilities: { herdr_version: "0.7.5", herdr_protocol: 17, live_handoff: true, agent_kinds_error: "unavailable" } }, "0.1.0");
+    const c = normalizeCapabilities({ ...wire, capabilities: { herdr_version: "0.8.0", herdr_protocol: 19, live_handoff: true, agent_kinds_error: "unavailable" } }, "0.1.0");
     expect(c.agentKindsAvailable).toBe(false);
     expect(c.agentKinds).toEqual([]);
   });

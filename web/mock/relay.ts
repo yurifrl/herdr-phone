@@ -255,8 +255,8 @@ let herd = seed();
 
 function topology() {
   return {
-    version: "0.7.5",
-    protocol: 17,
+    version: "0.8.0",
+    protocol: 19,
     focused_workspace_id: herd.focusedWorkspaceId,
     focused_tab_id: herd.focusedTabId,
     focused_pane_id: herd.focusedPaneId,
@@ -511,8 +511,8 @@ function capabilities() {
       "workspace.close", "workspace.create", "workspace.focus", "workspace.rename",
       "worktree.create", "worktree.open", "worktree.remove", "worktree.remove_force",
     ],
-    capabilities: { herdr_version: "0.7.5", herdr_protocol: 17, live_handoff: true, agent_kinds: ["claude", "codex", "opencode", "gemini", "cursor"] },
-    status: { version: "0.4.0", protocol: 17, mode, ready: true, herdr: { healthy: true }, state: { healthy: true }, clients: eventClients.size },
+    capabilities: { herdr_version: "0.8.0", herdr_protocol: 19, live_handoff: true, agent_kinds: ["claude", "codex", "opencode", "gemini", "cursor"] },
+    status: { version: "0.4.0", protocol: 19, mode, ready: true, herdr: { healthy: true }, state: { healthy: true }, clients: eventClients.size },
     tunnel: {
       mode,
       public_url: mode === "named" ? "https://phone.example.com" : "https://example.trycloudflare.com",

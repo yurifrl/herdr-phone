@@ -1,5 +1,5 @@
 // Package herdr is the single typed owner of the Herdr socket wire protocol
-// (protocol 17, schema version 1, Herdr 0.7.5).
+// (protocol 19, schema version 1, Herdr 0.8.0).
 //
 // It speaks newline-delimited JSON over a Unix domain socket. Normal requests
 // use one connection each with a bounded read, a string request id, result-type
@@ -16,7 +16,7 @@
 package herdr
 
 // Protocol is the Herdr wire protocol version this package targets.
-const Protocol = 17
+const Protocol = 19
 
 // MinHerdrVersion is the oldest Herdr release whose APIs this package uses.
-const MinHerdrVersion = "0.7.5"
+const MinHerdrVersion = "0.8.0"

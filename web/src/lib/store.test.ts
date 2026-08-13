@@ -46,8 +46,8 @@ function stubCaps(mode: "named" | "quick" = "quick") {
   vi.spyOn(api, "getCapabilities").mockResolvedValue({
     version: 1,
     operations: [],
-    capabilities: { herdr_version: "0.7.5", herdr_protocol: 17, live_handoff: true, agent_kinds: [] },
-    status: { version: "0.1.0", protocol: 17, mode, ready: true, herdr: { healthy: true }, state: { healthy: true }, clients: 1 },
+    capabilities: { herdr_version: "0.8.0", herdr_protocol: 19, live_handoff: true, agent_kinds: [] },
+    status: { version: "0.1.0", protocol: 19, mode, ready: true, herdr: { healthy: true }, state: { healthy: true }, clients: 1 },
     tunnel: { mode, public_url: "", health: { healthy: true } },
     limits: { max_body_bytes: 1, max_pane_read_lines: 1, confirmation_ttl_seconds: 30 },
   });
@@ -97,8 +97,8 @@ describe("AppStore.start — cold reload session recovery", () => {
     vi.spyOn(api, "getCapabilities").mockResolvedValue({
       version: 1,
       operations: ["pane.split"],
-      capabilities: { herdr_version: "0.7.5", herdr_protocol: 17, live_handoff: true, agent_kinds: ["claude"] },
-      status: { version: "0.1.0", protocol: 17, mode: "quick", ready: true, herdr: { healthy: true }, state: { healthy: true }, clients: 1 },
+      capabilities: { herdr_version: "0.8.0", herdr_protocol: 19, live_handoff: true, agent_kinds: ["claude"] },
+      status: { version: "0.1.0", protocol: 19, mode: "quick", ready: true, herdr: { healthy: true }, state: { healthy: true }, clients: 1 },
       tunnel: { mode: "quick", public_url: "", health: { healthy: true } },
       limits: { max_body_bytes: 1, max_pane_read_lines: 1, confirmation_ttl_seconds: 30 },
     });

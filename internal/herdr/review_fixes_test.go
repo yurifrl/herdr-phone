@@ -43,14 +43,14 @@ func TestHandshakeVersionBoundaries(t *testing.T) {
 		version    string
 		wantReject bool
 	}{
-		{"0.7.5", false},      // exact minimum
-		{"0.7.6", false},      // future patch
-		{"0.7.99", false},     // far future patch
-		{"0.8.0", false},      // future minor
+		{"0.8.0", false},      // exact minimum
+		{"0.8.1", false},      // future patch
+		{"0.8.99", false},     // far future patch
+		{"0.9.0", false},      // future minor
 		{"1.0.0", false},      // future major
-		{"0.7.5-rc.1", false}, // pre-release of the minimum: not older
-		{"v0.8.0", false},     // leading v tolerated
-		{"0.7.4", true},       // older patch
+		{"0.8.0-rc.1", false}, // pre-release of the minimum: not older
+		{"v0.9.0", false},     // leading v tolerated
+		{"0.7.5", true},       // older patch
 		{"0.6.9", true},       // older minor
 		{"0.0.0", true},       // ancient
 		{"", false},           // unparseable → defer to protocol gate
@@ -59,7 +59,7 @@ func TestHandshakeVersionBoundaries(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.version, func(t *testing.T) {
 			s := newServer(func(req map[string]any) []byte {
-				return reply(req, map[string]any{"type": "pong", "version": tc.version, "protocol": 17})
+				return reply(req, map[string]any{"type": "pong", "version": tc.version, "protocol": Protocol})
 			})
 			c := newTestClient(t, s)
 			_, err := c.Handshake(context.Background())

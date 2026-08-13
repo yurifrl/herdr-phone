@@ -6,8 +6,12 @@ import (
 	"encoding/json"
 	"net"
 	"os"
+	"strconv"
 	"sync"
 	"testing"
+
+	"github.com/matheus3301/herdr-phone/internal/buildinfo"
+	"github.com/matheus3301/herdr-phone/internal/herdr"
 )
 
 // fakeHerdr is an in-memory Herdr socket server for tests. It answers ping,
@@ -30,7 +34,7 @@ type fakeHerdr struct {
 
 // emptySnapshot is the default session.snapshot payload: a valid but empty
 // topology.
-const emptySnapshot = `{"version":"1","protocol":17,"workspaces":[],"tabs":[],"panes":[],"agents":[],"worktrees":[],"layouts":[]}`
+var emptySnapshot = `{"version":"1","protocol":` + strconv.Itoa(herdr.Protocol) + `,"workspaces":[],"tabs":[],"panes":[],"agents":[],"worktrees":[],"layouts":[]}`
 
 // setSnapshot replaces the topology session.snapshot returns. The payload is
 // compacted because the wire protocol is newline-delimited: an indented fixture
@@ -132,7 +136,7 @@ func (f *fakeHerdr) response(id, method string) []byte {
 
 	switch method {
 	case "ping":
-		return []byte(`{"id":"` + id + `","result":{"type":"pong","version":"0.7.5","protocol":17,"capabilities":{"live_handoff":true}}}`)
+		return []byte(`{"id":"` + id + `","result":{"type":"pong","version":"` + buildinfo.MinHerdrVersion + `","protocol":` + strconv.Itoa(herdr.Protocol) + `,"capabilities":{"live_handoff":true}}}`)
 	case "session.snapshot":
 		return []byte(`{"id":"` + id + `","result":{"type":"session_snapshot","snapshot":` + snapshot + `}}`)
 	case "events.subscribe":
